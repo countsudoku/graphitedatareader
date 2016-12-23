@@ -5,6 +5,7 @@
 from __future__ import print_function
 
 import urlparse
+import warnings
 
 from pandas import read_csv, MultiIndex, concat, Panel
 from pandas.compat import StringIO, string_types
@@ -109,6 +110,10 @@ class GraphiteDataReader(object):
             if create_multiindex:
                 self._create_multiindex(df, remove_duplicate_indices)
         elif isinstance(metrics, dict):
+            warnings.warn('To create a Panel from a dict of metric is a '
+                          'experimental feature. So don\'t use this in '
+                          'production! Because the resulting object may be '
+                          'changed in the future or the feature may be removed.')
             dfs = {}
             for label, metric in metrics.items():
                 dfs[label] = self._download_single_metric(url, metric, start, end)

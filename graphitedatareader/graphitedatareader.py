@@ -196,5 +196,27 @@ class GraphiteDataReader(object):
         DataFrame.columns = MultiIndex.from_tuples(new_columns)
         DataFrame.sort_index(axis=1, inplace=True)
 
+    @staticmethod
+    def add_index_level(idx, level):
+        """ Adds a level to a MultiIndex
+
+        Params:
+            idx: pandas.Index
+                The Index to add a level
+            level: string
+                The levels you want to add
+
+        Returns:
+            A new index object with the added level
+        """
+
+        if isinstance(level, string_types):
+            new_levels = [[level]]
+        else:
+            raise TypeError
+        for level in idx.levels:
+            new_levels.append(list(level.values))
+        return MultiIndex.from_product(new_levels)
+
 if __name__ == "__main__":
     print(__doc__)

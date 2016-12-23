@@ -9,7 +9,7 @@ except ImportError:
 setup(
     name='graphitedatareader',
     packages=['graphitedatareader',],
-    version='0.1.0',
+    version='0.1.1',
     description='Read data from GRaphite into a pandas DataFrame or Panel',
     author='Moritz C.K.U. Schneider',
     author_email='schneider.moritz@gmail.com',

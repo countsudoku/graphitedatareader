@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
+
 """ A class to get Data from Graphite """
 
 from __future__ import print_function
 
 import urlparse
-import requests
 
 from pandas import read_csv, MultiIndex, concat, Panel
 from pandas.compat import StringIO, string_types
+import requests
 
 class GraphiteDataError(IOError):
     """ A error class, for all kind of exceptions for GraphiteDataReader """
@@ -114,9 +115,8 @@ class GraphiteDataReader(object):
                 if create_multiindex:
                     self._create_multiindex(dfs[label], remove_duplicate_indices)
             df = Panel.from_dict(dfs)
-
         else:
-            raise NotImplementedError
+            raise TypeError
 
         return df
 
@@ -141,13 +141,13 @@ class GraphiteDataReader(object):
                 .format(url=url)
                 )
 
-        data = read_csv( StringIO(r.text),
-                         names=['metric', 'date', 'data'],
-                         parse_dates=['date'],
-                         index_col=['metric', 'date'],
-                         squeeze=False,
-                       ).unstack('metric')['data']
-        return data
+        df = read_csv( StringIO(r.text),
+                       names=['metric', 'datetime', 'data'],
+                       parse_dates=['datetime'],
+                       index_col=['metric', 'datetime'],
+                       squeeze=False,
+                     ).unstack('metric')['data']
+        return df
 
     @staticmethod
     def _init_session(session):

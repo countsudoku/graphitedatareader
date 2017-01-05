@@ -222,7 +222,13 @@ class GraphiteDataReader(object):
             new_levels = [[level]]
         else:
             raise TypeError
-        for level in idx.levels:
+
+        try:
+            index_list = idx.levels
+        except AttributeError:
+            index_list = [ idx ]
+
+        for level in index_list:
             new_levels.append(list(level.values))
         return MultiIndex.from_product(new_levels)
 

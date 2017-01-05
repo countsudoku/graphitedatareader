@@ -101,14 +101,20 @@ class GraphiteDataReader(object):
         if isinstance(metrics, string_types):
             df = self._download_single_metric(url, metrics, start, end)
             if create_multiindex:
-                self._create_multiindex(df, remove_duplicate_indices)
+                df.columns = self._create_multiindex(
+                    df.columns,
+                    remove_duplicate_indices
+                    )
         elif isinstance(metrics, list):
             dfs = []
             for metric in metrics:
                 dfs.append(self._download_single_metric(url, metric, start, end))
             df = concat(dfs, axis=1)
             if create_multiindex:
-                self._create_multiindex(df, remove_duplicate_indices)
+                df.columns = self._create_multiindex(
+                    df.columns,
+                    remove_duplicate_indices
+                    )
         elif isinstance(metrics, dict):
             warnings.warn('To create a Panel from a dict of metric is a '
                           'experimental feature. So don\'t use this in '
@@ -118,7 +124,10 @@ class GraphiteDataReader(object):
             for label, metric in metrics.items():
                 dfs[label] = self._download_single_metric(url, metric, start, end)
                 if create_multiindex:
-                    self._create_multiindex(dfs[label], remove_duplicate_indices)
+                    dfs[label].columns = self._create_multiindex(
+                        dfs[label].columns,
+                        remove_duplicate_indices,
+                        )
             df = Panel.from_dict(dfs)
         else:
             raise TypeError
@@ -163,12 +172,12 @@ class GraphiteDataReader(object):
 
 
     @staticmethod
-    def _create_multiindex(DataFrame, remove_duplicates=False):
-        """ Tries to find the field that differs in the DataFrame and remove
+    def _create_multiindex(idx, remove_duplicates=False):
+        """ Tries to find the field that differs in a MultiIndex and remove
         all other column levels"""
 
         # split the metrics on a dot
-        columns = [ column.split('.') for column in DataFrame.columns.values ]
+        columns = [ column.split('.') for column in idx.values ]
         row_idx = []
 
         # padding
@@ -193,8 +202,7 @@ class GraphiteDataReader(object):
         else:
             new_columns = columns
 
-        DataFrame.columns = MultiIndex.from_tuples(new_columns)
-        DataFrame.sort_index(axis=1, inplace=True)
+        return MultiIndex.from_tuples(new_columns).sort_values()
 
     @staticmethod
     def add_index_level(idx, level):

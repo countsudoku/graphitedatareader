@@ -205,7 +205,7 @@ class GraphiteDataReader(object):
         return MultiIndex.from_tuples(new_columns).sort_values()
 
     @staticmethod
-    def add_index_level(idx, level):
+    def _add_index_level(idx, level):
         """ Adds a level to a MultiIndex
 
         Params:

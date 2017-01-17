@@ -180,7 +180,7 @@ class GraphiteDataReader(object):
                 column.extend(['' for _ in range(max_length - len(column)) ])
 
         # check, which metric fields differ
-        if remove_duplicates:
+        if remove_duplicates and (len(columns) > 1):
             for index, column in enumerate(columns[:-1]):
                 for sec_column in columns[index+1:]:
                     for idx, names in enumerate(zip(column, sec_column)):

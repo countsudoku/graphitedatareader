@@ -7,7 +7,7 @@ from __future__ import print_function
 import urlparse
 import warnings
 
-from pandas import read_csv, MultiIndex, concat, Panel
+from pandas import read_csv, MultiIndex, concat, Panel, DataFrame, to_datetime
 from pandas.compat import StringIO, string_types
 import requests
 
@@ -49,6 +49,7 @@ class GraphiteDataReader(object):
         self._session = self._init_session(session)
         self._format = 'csv'
         self._render_api = '/render'
+        self._base_tz = 'UTC'
 
     @property
     def start(self):
@@ -146,7 +147,22 @@ class GraphiteDataReader(object):
                 .format(url=url)
                 )
 
-        df = read_csv( StringIO(r.text),
+        if self._format == 'json':
+            # generator with dataframes for all returned metrics
+            dfs = ( DataFrame(
+                data['datapoints'],
+                columns=[data['target'], 'datetime' ],
+                ).set_index('datetime')
+                    for data in r.json() )
+            df = concat(dfs, axis=1)
+            # Parse the epoch datetime index and set the _base_tz timezone
+            df.index = to_datetime(
+                (df.index.values*1e9).astype(int)
+                ).tz_localize(self._base_tz)
+            return df
+
+        if self._format == 'csv':
+            df = read_csv( StringIO(r.text),
                        names=['metric', 'datetime', 'data'],
                        parse_dates=['datetime'],
                        index_col=['metric', 'datetime'],

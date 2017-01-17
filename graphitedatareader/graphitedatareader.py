@@ -47,7 +47,7 @@ class GraphiteDataReader(object):
         self._verify = tls_verify
 
         self._session = self._init_session(session)
-        self._format = 'csv'
+        self._format = 'json'
         self._render_api = '/render'
         self._base_tz = 'UTC'
 

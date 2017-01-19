@@ -122,7 +122,7 @@ class GraphiteDataReader(object):
                     self._create_multiindex(dfs[label], remove_duplicate_indices)
             df = Panel.from_dict(dfs)
         else:
-            raise TypeError
+            raise TypeError('metric has to be of type str or list')
 
         return df
 
@@ -148,6 +148,12 @@ class GraphiteDataReader(object):
                 )
 
         if self._format == 'json':
+            if not r.json:
+                raise GraphiteDataError(
+                    'Received empty dataset for target {target}'.format(
+                        target=target,
+                    )
+                )
             # generator with dataframes for all returned metrics
             dfs = ( DataFrame(
                 data['datapoints'],
@@ -162,12 +168,18 @@ class GraphiteDataReader(object):
             return df
 
         if self._format == 'csv':
+            if not r.text:
+                raise GraphiteDataError(
+                    'Received empty dataset for target {target}'.format(
+                        target=target,
+                    )
+                )
             df = read_csv( StringIO(r.text),
-                       names=['metric', 'datetime', 'data'],
-                       parse_dates=['datetime'],
-                       index_col=['metric', 'datetime'],
-                       squeeze=False,
-                     ).unstack('metric')['data']
+                           names=['metric', 'datetime', 'data'],
+                           parse_dates=['datetime'],
+                           index_col=['metric', 'datetime'],
+                           squeeze=False,
+                         ).unstack('metric')['data']
         return df
 
     @staticmethod

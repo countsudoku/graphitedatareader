@@ -18,4 +18,4 @@ To get data from a Graphite instance, do the following:
 
 from .graphitedatareader import GraphiteDataReader
 
-__version__ = '0.1.2'
+__version__ = '0.2.0'

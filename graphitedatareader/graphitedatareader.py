@@ -28,9 +28,8 @@ class GraphiteDataReader(BaseReader):
             (default: True)
         session: a requests.Session object (default None)
     """
-    url = None
     def __init__(self,
-                 url=None,
+                 url,
                  start=None,
                  end=None,
                  tls_verify='/etc/ssl/certs/',
@@ -50,8 +49,6 @@ class GraphiteDataReader(BaseReader):
             session=session,
             timeout=timeout,
         )
-        if url:
-            self.url = url
 
     @property
     def start(self):

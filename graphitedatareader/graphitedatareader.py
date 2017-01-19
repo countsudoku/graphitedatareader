@@ -2,20 +2,17 @@
 
 """ A class to get Data from Graphite """
 
-from __future__ import print_function
+from __future__ import print_function, absolute_import
 
 import urlparse
 import warnings
 
 from pandas import read_csv, MultiIndex, concat, Panel, DataFrame, to_datetime
 from pandas.compat import StringIO, string_types
-import requests
 
-class GraphiteDataError(IOError):
-    """ A error class, for all kind of exceptions for GraphiteDataReader """
-    pass
+from .BaseReader import BaseReader, GraphiteDataError
 
-class GraphiteDataReader(object):
+class GraphiteDataReader(BaseReader):
     """
     Creates a GraphitDataReader object, which you can use to read different
     metrics in a pandas DataFrame
@@ -38,18 +35,23 @@ class GraphiteDataReader(object):
                  end=None,
                  tls_verify='/etc/ssl/certs/',
                  session=None,
+                 timeout=30.,
                 ):
 
-        if url:
-            self.url = url
         self._from = start
         self._until = end
-        self._verify = tls_verify
-
-        self._session = self._init_session(session)
         self._format = 'json'
         self._render_api = '/render'
         self._base_tz = 'UTC'
+
+        super(GraphiteDataReader, self).__init__(
+            url=url,
+            tls_verify=tls_verify,
+            session=session,
+            timeout=timeout,
+        )
+        if url:
+            self.url = url
 
     @property
     def start(self):
@@ -140,12 +142,7 @@ class GraphiteDataReader(object):
                    'from': start,
                    'until': end,
                    'format': self._format, }
-        r = self._session.get(url, params=params, verify=self._verify)
-        if r.status_code != requests.codes.ok:
-            raise  GraphiteDataError(
-                'Unable to read URL: {url}'
-                .format(url=url)
-                )
+        r = self._get(url, params=params)
 
         if self._format == 'json':
             if not r.json:
@@ -181,14 +178,6 @@ class GraphiteDataReader(object):
                            squeeze=False,
                          ).unstack('metric')['data']
         return df
-
-    @staticmethod
-    def _init_session(session):
-        """ create a default Session if no session is specified """
-        if session is None:
-            session = requests.Session()
-        return session
-
 
     @staticmethod
     def _create_multiindex(DataFrame, remove_duplicates=False):

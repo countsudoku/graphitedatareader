@@ -14,7 +14,7 @@ from .BaseReader import BaseReader, GraphiteDataError
 
 class GraphiteDataReader(BaseReader):
     """
-    Creates a GraphitDataReader object, which you can use to read different
+    Creates a GraphiteDataReader object, which you can use to read different
     metrics in a pandas DataFrame
 
     Arguments:
@@ -128,12 +128,19 @@ class GraphiteDataReader(BaseReader):
     def _download_single_metric(self, url, target, start, end):
         """ downloads of the specified target
 
-        Arguments:
-            url (string): The Graphite render url
-            target (string): The metric you want do download
+        Args:
+            url: string
+                The Graphite render url
+            target: string
+                The metric you want do download
+            start: string
+                The start date (see the graphite documentation for possible
+                values)
+            end: string
+                the end date (same as start)
 
         returns:
-            a pandas.DataFrame
+            a pandas.DataFrame or Panel
         """
         params = { 'target': target,
                    'from': start,

@@ -5,6 +5,9 @@
 
 from __future__ import print_function, absolute_import
 
+import os
+import urlparse
+
 from .graphitedatareader import BaseReader
 
 class GraphiteMetricsAPI(BaseReader):
@@ -39,17 +42,48 @@ class GraphiteMetricsAPI(BaseReader):
             timeout=timeout,
             )
 
-    def find(self, metrics, start, end):
+    def find(self, target, start=None, end=None):
         """
         Finds metrics under a given path.
         """
-        raise NotImplementedError
+        url_path = os.path.join(self._metrics_api, 'find')
+        url = urlparse.urljoin(self.url, url_path)
+        params = { 'query': target,
+                   'formater': 'treejson',
+                   'from': start,
+                   'until': end,
+                   'wildcards': 0,
+                 }
+        r = self._get(url, params=params)
+        return r.json()
 
-    def expand(self, metrics):
+    def expand(self, targets, group_by_expr=False, leaves_only=False):
         """
         Expands the given query with matching paths.
         """
-        raise NotImplementedError
+        if not isinstance(group_by_expr, bool):
+            raise TypeError('group_by_expr has to be of type bool')
+        if not isinstance(leaves_only, bool):
+            raise TypeError('leaves_only has to be of type bool')
+
+        if group_by_expr:
+            group_by_expr = 1
+        else:
+            group_by_expr = 0
+
+        if leaves_only:
+            leaves_only = 1
+        else:
+            leaves_only = 0
+
+        url_path = os.path.join(self._metrics_api, 'expand')
+        url = urlparse.urljoin(self.url, url_path)
+        params = { 'query': targets,
+                   'groupByExpr':group_by_expr,
+                   'leavesOnly':leaves_only,
+                 }
+        r = self._get(url, params=params)
+        return r.json()['results']
 
     def index(self):
         """

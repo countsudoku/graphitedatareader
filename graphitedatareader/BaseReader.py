@@ -47,8 +47,11 @@ class BaseReader(object):
                              )
         if r.status_code != requests.codes['ok']:
             raise  GraphiteDataError(
-                'Unable to read URL: {url}'
-                .format(url=url)
+                'Unable to read URL: {url} (status: {status_code})'
+                .format(
+                    url=url,
+                    status_code=r.status_code,
+                    )
                 )
         return r
 

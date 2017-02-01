@@ -16,7 +16,7 @@ To get data from a Graphite instance, do the following:
 
 """
 
-from .graphitedatareader import GraphiteDataReader
+from .GraphiteDataReader import GraphiteDataReader
 from .GraphiteMetricsReader import GraphiteMetricsReader
 
 __version__ = '0.2.0'

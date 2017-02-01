@@ -22,4 +22,4 @@ from .GraphiteMetricsReader import GraphiteMetricsReader
 
 __all__ = [ 'GraphiteDataReader', 'GraphiteDataError', 'GraphiteMetricsReader' ]
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'

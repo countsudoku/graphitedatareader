@@ -16,7 +16,10 @@ To get data from a Graphite instance, do the following:
 
 """
 
+from .BaseReader import GraphiteDataError
 from .GraphiteDataReader import GraphiteDataReader
 from .GraphiteMetricsReader import GraphiteMetricsReader
+
+__all__ = [ 'GraphiteDataReader', 'GraphiteDataError', 'GraphiteMetricsReader' ]
 
 __version__ = '0.2.0'

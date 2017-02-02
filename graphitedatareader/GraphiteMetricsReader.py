@@ -5,7 +5,7 @@
 from __future__ import print_function, absolute_import
 
 from .BaseReader import GraphiteDataError
-from .MetricsAPI import GraphiteMetricsAPI
+from .GraphiteMetricsAPI import GraphiteMetricsAPI
 
 class GraphiteMetricsReader(object):
     """

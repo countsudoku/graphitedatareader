@@ -4,6 +4,7 @@
 
 from __future__ import print_function, absolute_import
 
+import re
 from itertools import chain
 
 from .BaseReader import GraphiteDataError
@@ -26,10 +27,20 @@ class GraphiteMetricsReader(object):
     """
     def __init__(self,
                  url,
+                 base_path=None,
                  tls_verify='/etc/ssl/certs/',
                  session=None,
                  timeout=30.,
                 ):
+
+        if not base_path:
+            self.base_path = ''
+        else:
+            self.base_path = base_path
+        self.url = url
+        self.tls_verify = tls_verify
+        self.session = session
+        self.timeout = timeout
 
         self.metrics_obj = GraphiteMetricsAPI(
             url=url,
@@ -38,11 +49,46 @@ class GraphiteMetricsReader(object):
             timeout=timeout,
         )
 
-    def walk(self, top='', start=None, end=None):
+        self._leafs = None
+        self._internal_nodes = None
+
+
+    def __dir__(self):
+        if not self._leafs:
+            self._fill_nodes()
+        return dir(type(self)) + self._leafs + self._internal_nodes
+
+    def __getattr__(self, name):
+        if not self._leafs:
+            self._fill_nodes()
+        if name in self._leafs:
+            return self.base_path + '.' + name
+        elif name in self._internal_nodes:
+            return GraphiteMetricsReader(
+                self.url,
+                self.base_path + '.' + name,
+                self.tls_verify,
+                self.session,
+                self.timeout)
+
+    def _fill_nodes(self):
+        w = self.walk()
+        metrics = w.next()[1:]
+        w.close()
+        self._internal_nodes = []
+        for node in metrics[0]:
+            self._internal_nodes.append(
+                node.replace(self.base_path + '.', '', 1))
+        self._leafs = []
+        for leaf in metrics[1]:
+            self._leafs.append(
+                leaf.replace(self.base_path + '.', '', 1))
+
+    def walk(self, top=None, start=None, end=None):
         """ Walks the metrics tree like os.walk
 
         Arguments:
-            base_path: string
+            top: string
                 the target, where the walk starts
             start: string
                 A start time (see graphite documentation for the format)
@@ -53,10 +99,16 @@ class GraphiteMetricsReader(object):
             a generator object, which yields (target, non-leafs, leafs) for
             each metric.
         """
-        if top == '':
+        if top:
+            full_path = self.base_path + '.' + top
+        else:
+            full_path = self.base_path
+
+        if full_path == '':
             path = '*'
         else:
-            path = top + '.*'
+            path = full_path + '.*'
+
         metrics = self.metrics_obj.find(path, start, end)
         leafs = set()
         internal_nodes = set()

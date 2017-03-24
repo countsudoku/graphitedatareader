@@ -4,6 +4,8 @@
 
 from __future__ import print_function, absolute_import
 
+from itertools import chain
+
 from .BaseReader import GraphiteDataError
 from .GraphiteMetricsAPI import GraphiteMetricsAPI
 
@@ -70,3 +72,24 @@ class GraphiteMetricsReader(object):
         for node in internal_nodes:
             for branch in self.walk(node, start, end):
                 yield branch
+
+    def list(self, path='', start=None, end=None):
+        """ lists the content of a path (leafs and non-leafs)
+
+        Arguments:
+            path: string
+                the metrics path, where the conten should be listed
+            start: string
+                A start time (see graphite documentation for the format)
+            end: string
+                A end date (same as start)
+
+        Reurns:
+            a generator object, which yields (target, non-leafs, leafs) for
+            each metric.
+        """
+        g_walk = self.walk(path, start, end)
+        path_content = g_walk.next()
+        g_walk.close()
+        return list(chain(path_content[1], path_content[2]))
+
